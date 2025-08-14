@@ -1,5 +1,18 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 
+// --- BRANDING FIRMOWY ---
+// Zmień poniższe wartości, aby dopasować wygląd aplikacji do Twojej marki.
+const THEME = {
+     colors: {
+        primary: '#801540',       // Główny kolor (np. przyciski, nagłówki)
+        primaryHover: '#e61269', // Kolor po najechaniu myszką
+        background: '#ffffff',    // Kolor tła całej aplikacji
+        cardBackground: '#ffffff',// Tło dla kart i sekcji
+        textPrimary: '#000000',   // Główny kolor tekstu
+        textSecondary: '#b2b2b2', // Drugorzędny kolor tekstu
+    }
+};
+
 // --- Stałe i dane ---
 
 const STATEMENTS = [
@@ -26,11 +39,11 @@ const STATEMENTS = [
 ];
 
 const CATEGORIES_CONFIG = {
-    cat5: { title: 'Opisuje mnie w bardzo dużym stopniu lub w pełni', capacity: 2, score: 5 },
-    cat4: { title: 'Opisuje mnie w dużym stopniu', capacity: 5, score: 4 },
-    cat3: { title: 'Opisuje mnie w przeciętnym stopniu', capacity: 6, score: 3 },
-    cat2: { title: 'Opisuje mnie w małym stopniu', capacity: 5, score: 2 },
-    cat1: { title: 'Opisuje mnie w minimalnym stopniu lub w ogóle', capacity: 2, score: 1 },
+    cat5: { title: '5: Opisuje mnie w bardzo dużym stopniu lub w pełni', capacity: 2, score: 5 },
+    cat4: { title: '4: Opisuje mnie w dużym stopniu', capacity: 5, score: 4 },
+    cat3: { title: '3: Opisuje mnie w przeciętnym stopniu', capacity: 6, score: 3 },
+    cat2: { title: '2: Opisuje mnie w małym stopniu', capacity: 5, score: 2 },
+    cat1: { title: '1: Opisuje mnie w minimalnym stopniu lub w ogóle', capacity: 2, score: 1 },
 };
 
 const INITIAL_SORT_STATE = {
@@ -47,13 +60,13 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, title, message }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
-                <h3 className="text-lg font-bold mb-4">{title}</h3>
-                <p className="text-sm text-gray-700 mb-6">{message}</p>
+                <h3 className="text-lg font-bold mb-4" style={{ color: THEME.colors.textPrimary }}>{title}</h3>
+                <p className="text-sm mb-6" style={{ color: THEME.colors.textSecondary }}>{message}</p>
                 <div className="flex justify-end space-x-4">
                     <button onClick={onCancel} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">
                         Anuluj
                     </button>
-                    <button onClick={onConfirm} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <button onClick={onConfirm} className="px-4 py-2 text-white rounded-lg" style={{ backgroundColor: THEME.colors.primary }}>
                         Kontynuuj mimo to
                     </button>
                 </div>
@@ -62,41 +75,45 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, title, message }) => {
     );
 };
 
-// Komponent pojedynczego stwierdzenia (teraz klikalny)
+// Komponent pojedynczego stwierdzenia (klikalny)
 const StatementCard = ({ statement, onClick, isSelected, isMovable = true }) => (
     <div
         onClick={isMovable ? onClick : undefined}
-        className={`flex items-center p-3 mb-2 bg-white border-2 rounded-lg shadow-sm transition-all ${
-            isSelected
-                ? 'border-blue-500 scale-105 shadow-md'
-                : 'border-gray-300'
+        className={`flex items-center p-3 mb-2 border-2 rounded-lg shadow-sm transition-all ${
+            isSelected ? 'scale-105 shadow-md' : ''
         } ${
-            isMovable
-                ? 'cursor-pointer hover:bg-gray-50'
-                : 'opacity-75'
+            isMovable ? 'cursor-pointer hover:opacity-80' : 'opacity-75'
         }`}
+        style={{ 
+            backgroundColor: THEME.colors.cardBackground,
+            borderColor: isSelected ? THEME.colors.primary : '#e5e7eb',
+            color: THEME.colors.textPrimary
+        }}
     >
-        <p className="text-sm text-gray-800 flex-grow select-none">{statement.id}. {statement.text}</p>
+        <p className="text-sm flex-grow select-none">{statement.id}. {statement.text}</p>
     </div>
 );
 
 
-// Komponent kategorii (teraz klikalny)
+// Komponent kategorii (klikalny)
 const CategoryBox = ({ id, config, statements, onClick, isTarget, onStatementClick }) => {
     const isFull = statements.length >= config.capacity;
-    const borderColor = isFull ? 'border-green-500' : 'border-gray-300';
 
     return (
         <div
             onClick={onClick}
-            className={`p-4 mb-4 bg-gray-50 rounded-xl border-2 border-dashed ${borderColor} transition-all ${isTarget ? 'bg-blue-100 border-blue-500' : ''}`}
+            className={`p-4 mb-4 rounded-xl border-2 border-dashed transition-all`}
+            style={{ 
+                borderColor: isTarget ? THEME.colors.primary : (isFull ? '#4ade80' : '#d1d5db'),
+                backgroundColor: isTarget ? `${THEME.colors.primary}1A` : '#f9fafb'
+            }}
         >
-            <h3 className="font-semibold text-gray-700">{config.title}</h3>
-            <p className={`text-sm mb-2 ${isFull ? 'text-green-600 font-bold' : 'text-gray-500'}`}>
+            <h3 className="font-semibold" style={{ color: THEME.colors.textPrimary }}>{config.title}</h3>
+            <p className={`text-sm mb-2 ${isFull ? 'font-bold' : ''}`} style={{ color: isFull ? '#16a34a' : THEME.colors.textSecondary }}>
                 Wymagane: {config.capacity} | Umieszczono: {statements.length}
             </p>
             {isTarget && !isFull && (
-                <div className="text-center p-4 my-2 bg-blue-200 text-blue-800 rounded-lg">
+                <div className="text-center p-4 my-2 rounded-lg" style={{ backgroundColor: `${THEME.colors.primary}33`, color: THEME.colors.primary }}>
                     Dotknij tutaj, aby przypisać
                 </div>
             )}
@@ -109,7 +126,7 @@ const CategoryBox = ({ id, config, statements, onClick, isTarget, onStatementCli
     );
 };
 
-// Komponent fazy sortowania (przebudowany dla mobile)
+// Komponent fazy sortowania
 const SortingPhase = ({ phaseTitle, onComplete }) => {
     const [sortedState, setSortedState] = useState(INITIAL_SORT_STATE);
     const [selectedStatementId, setSelectedStatementId] = useState(null);
@@ -127,14 +144,11 @@ const SortingPhase = ({ phaseTitle, onComplete }) => {
         const targetCategory = sortedState[categoryId];
         const targetConfig = CATEGORIES_CONFIG[categoryId];
         if (targetCategory.length >= targetConfig.capacity) {
-            // Opcjonalnie: pokaż powiadomienie, że kategoria jest pełna
             return;
         }
 
         let sourceKey = 'unassigned';
-        let sourceList = sortedState.unassigned;
-
-        if (!sourceList.includes(selectedStatementId)) {
+        if (!sortedState.unassigned.includes(selectedStatementId)) {
             for (const key in sortedState) {
                 if (key !== 'unassigned' && sortedState[key].includes(selectedStatementId)) {
                     sourceKey = key;
@@ -145,9 +159,7 @@ const SortingPhase = ({ phaseTitle, onComplete }) => {
         
         setSortedState(prevState => {
             const newState = { ...prevState };
-            // Usuń z listy źródłowej
             newState[sourceKey] = prevState[sourceKey].filter(id => id !== selectedStatementId);
-            // Dodaj do listy docelowej
             newState[categoryId] = [...prevState[categoryId], selectedStatementId];
             return newState;
         });
@@ -166,7 +178,7 @@ const SortingPhase = ({ phaseTitle, onComplete }) => {
     const processAndSubmit = useCallback(() => {
         const results = {};
         STATEMENTS.forEach(stmt => {
-            results[stmt.id] = 0; // Domyślna wartość 0 dla wszystkich
+            results[stmt.id] = 0;
         });
 
         for (const catId in CATEGORIES_CONFIG) {
@@ -190,14 +202,13 @@ const SortingPhase = ({ phaseTitle, onComplete }) => {
 
     return (
         <div className="p-4 md:p-6">
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">{phaseTitle}</h2>
-            <p className="text-center text-gray-600 mb-6">
+            <h2 className="text-3xl font-bold text-center mb-2" style={{ color: THEME.colors.textPrimary }}>{phaseTitle}</h2>
+            <p className="text-center mb-6" style={{ color: THEME.colors.textSecondary }}>
                 {selectedStatementId ? "Teraz wybierz kategorię poniżej." : "Dotknij stwierdzenia, aby je wybrać."}
             </p>
 
-            {/* Sekcja ze stwierdzeniami do posortowania */}
-            <div className="mb-8 p-4 bg-gray-100 rounded-xl">
-                <h3 className="font-semibold text-lg mb-4 text-gray-700">Stwierdzenia do przypisania</h3>
+            <div className="mb-8 p-4 rounded-xl" style={{ backgroundColor: '#eef2f6' }}>
+                <h3 className="font-semibold text-lg mb-4" style={{ color: THEME.colors.textPrimary }}>Stwierdzenia do przypisania</h3>
                 {unassignedStatements.length > 0 ? (
                     unassignedStatements.map(stmt => (
                         <StatementCard
@@ -209,13 +220,12 @@ const SortingPhase = ({ phaseTitle, onComplete }) => {
                         />
                     ))
                 ) : (
-                    <p className="text-center text-gray-500 p-4">Wszystkie stwierdzenia zostały przypisane!</p>
+                    <p className="text-center p-4" style={{ color: THEME.colors.textSecondary }}>Wszystkie stwierdzenia zostały przypisane!</p>
                 )}
             </div>
             
-            {/* Sekcja z kategoriami */}
             <div>
-                <h3 className="font-semibold text-lg mb-4 text-gray-700">Twoje Kategorie</h3>
+                <h3 className="font-semibold text-lg mb-4" style={{ color: THEME.colors.textPrimary }}>Twoje Kategorie</h3>
                 {Object.keys(CATEGORIES_CONFIG).sort((a, b) => b.localeCompare(a)).map(catId => (
                     <CategoryBox
                         key={catId}
@@ -232,7 +242,10 @@ const SortingPhase = ({ phaseTitle, onComplete }) => {
             <div className="mt-8 text-center">
                 <button
                     onClick={handleAttemptSubmit}
-                    className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-all"
+                    className="w-full md:w-auto px-8 py-3 text-white font-bold rounded-lg shadow-md transition-all"
+                    style={{ backgroundColor: THEME.colors.primary }}
+                    onMouseOver={e => e.currentTarget.style.backgroundColor = THEME.colors.primaryHover}
+                    onMouseOut={e => e.currentTarget.style.backgroundColor = THEME.colors.primary}
                 >
                     Zatwierdź i kontynuuj
                 </button>
@@ -244,10 +257,7 @@ const SortingPhase = ({ phaseTitle, onComplete }) => {
             </div>
             <ConfirmationModal
                 isOpen={isModalOpen}
-                onConfirm={() => {
-                    setIsModalOpen(false);
-                    processAndSubmit();
-                }}
+                onConfirm={() => { setIsModalOpen(false); processAndSubmit(); }}
                 onCancel={() => setIsModalOpen(false)}
                 title="Potwierdzenie"
                 message="Nie wszystkie kategorie zostały w pełni uzupełnione. Czy na pewno chcesz kontynuować? Nieprzypisane stwierdzenia otrzymają najniższą ocenę."
@@ -306,16 +316,12 @@ const ResultsScreen = ({ resultsAm, resultsWannabe, onRestart }) => {
         }
         setIsGeneratingPdf(true);
 
-        html2canvas(input, { scale: 2, useCORS: true })
+        html2canvas(input, { scale: 2, useCORS: true, backgroundColor: THEME.colors.background })
             .then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF({
-                    orientation: 'p',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-
+                const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
                 const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
                 const canvasWidth = canvas.width;
                 const canvasHeight = canvas.height;
                 const ratio = canvasWidth / canvasHeight;
@@ -325,13 +331,13 @@ const ResultsScreen = ({ resultsAm, resultsWannabe, onRestart }) => {
                 let position = 0;
 
                 pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                heightLeft -= pdf.internal.pageSize.getHeight();
+                heightLeft -= pdfHeight;
 
                 while (heightLeft > 0) {
                     position = heightLeft - imgHeight;
                     pdf.addPage();
                     pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                    heightLeft -= pdf.internal.pageSize.getHeight();
+                    heightLeft -= pdfHeight;
                 }
                 pdf.save('raport-q-sort.pdf');
                 setIsGeneratingPdf(false);
@@ -343,20 +349,20 @@ const ResultsScreen = ({ resultsAm, resultsWannabe, onRestart }) => {
 
     return (
         <div className="p-4 md:p-8 max-w-4xl mx-auto">
-            <div id="pdf-content">
-                <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Twoje Osobiste Spostrzeżenia</h2>
+            <div id="pdf-content" className="p-2 md:p-4" style={{ backgroundColor: THEME.colors.background }}>
+                <h2 className="text-3xl font-bold text-center my-8" style={{ color: THEME.colors.textPrimary }}>Twoje Osobiste Spostrzeżenia</h2>
 
-                <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                    <h3 className="text-2xl font-semibold text-gray-800 mb-4">Analiza Różnic</h3>
-                    <p className="text-gray-600 mb-6">Poniżej znajdują się wszystkie stwierdzenia, posortowane od największej do najmniejszej różnicy między Twoim obecnym "ja" a idealnym "ja".</p>
+                <div className="p-6 rounded-xl shadow-lg mb-8" style={{ backgroundColor: THEME.colors.cardBackground }}>
+                    <h3 className="text-2xl font-semibold mb-4" style={{ color: THEME.colors.textPrimary }}>Analiza Różnic</h3>
+                    <p className="mb-6" style={{ color: THEME.colors.textSecondary }}>Poniżej znajdują się wszystkie stwierdzenia, posortowane od największej do najmniejszej różnicy między Twoim obecnym "ja" a idealnym "ja".</p>
                     <ul className="space-y-4">
                         {analysis.allDifferences.map(item => (
-                            <li key={item.id} className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <p className="font-semibold text-gray-800">{item.id}. {item.text}</p>
-                                <p className="text-sm text-blue-800 mt-1">
+                            <li key={item.id} className="p-4 border rounded-lg" style={{ backgroundColor: `${THEME.colors.primary}1A`, borderColor: `${THEME.colors.primary}4D` }}>
+                                <p className="font-semibold" style={{ color: THEME.colors.textPrimary }}>{item.id}. {item.text}</p>
+                                <p className="text-sm mt-1" style={{ color: THEME.colors.primary }}>
                                     Różnica: <span className="font-bold">{item.diff} pkt</span>
                                 </p>
-                                <div className="text-xs text-gray-700 mt-2 p-2 bg-blue-100 rounded">
+                                <div className="text-xs mt-2 p-2 rounded" style={{ backgroundColor: `${THEME.colors.primary}33`, color: THEME.colors.textPrimary }}>
                                     <p><strong className="font-medium">Jaki jestem:</strong> {getCategoryTitleByScore(item.scoreAm)}</p>
                                     <p><strong className="font-medium">Jaki chcę być:</strong> {getCategoryTitleByScore(item.scoreWannabe)}</p>
                                 </div>
@@ -365,28 +371,28 @@ const ResultsScreen = ({ resultsAm, resultsWannabe, onRestart }) => {
                     </ul>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                    <h3 className="text-2xl font-semibold text-gray-800 mb-4">Profil Przywództwa</h3>
-                    <p className="text-gray-600 mb-6">Poniższa tabela pokazuje balans cech (parzyste - przywództwo transakcyjne vs nieparzyste - przywództwo transformacyjne), które uznałeś/aś za istotne (ocena 3-5 pkt).</p>
+                <div className="p-6 rounded-xl shadow-lg mb-8" style={{ backgroundColor: THEME.colors.cardBackground }}>
+                    <h3 className="text-2xl font-semibold mb-4" style={{ color: THEME.colors.textPrimary }}>Profil Przywództwa</h3>
+                    <p className="mb-6" style={{ color: THEME.colors.textSecondary }}>Poniższa tabela pokazuje balans cech (parzyste - przywództwo transakcyjne vs nieparzyste - przywództwo transformacyjne), które uznałeś/aś za istotne (ocena 3-5 pkt).</p>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr>
-                                    <th className="p-3 bg-gray-100 font-semibold text-gray-700 border-b-2 border-gray-200">Profil</th>
-                                    <th className="p-3 bg-gray-100 font-semibold text-gray-700 border-b-2 border-gray-200 text-center">Stwierdzenia Nieparzyste (transformacyjne)</th>
-                                    <th className="p-3 bg-gray-100 font-semibold text-gray-700 border-b-2 border-gray-200 text-center">Stwierdzenia Parzyste (transakcyjne)</th>
+                                    <th className="p-3 font-semibold border-b-2" style={{ backgroundColor: `${THEME.colors.primary}1A`, color: THEME.colors.textPrimary, borderColor: `${THEME.colors.primary}4D` }}>Profil</th>
+                                    <th className="p-3 font-semibold border-b-2 text-center" style={{ backgroundColor: `${THEME.colors.primary}1A`, color: THEME.colors.textPrimary, borderColor: `${THEME.colors.primary}4D` }}>Stwierdzenia Nieparzyste (transformacyjne)</th>
+                                    <th className="p-3 font-semibold border-b-2 text-center" style={{ backgroundColor: `${THEME.colors.primary}1A`, color: THEME.colors.textPrimary, borderColor: `${THEME.colors.primary}4D` }}>Stwierdzenia Parzyste (transakcyjne)</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className="border-b border-gray-200">
-                                    <td className="p-3 font-bold text-gray-800">JAKI JESTEM</td>
-                                    <td className="p-3 text-center text-2xl font-bold text-gray-800">{analysis.evenOddAnalysis.am.odd}</td>
-                                    <td className="p-3 text-center text-2xl font-bold text-gray-800">{analysis.evenOddAnalysis.am.even}</td>
+                                <tr className="border-b" style={{ borderColor: '#e5e7eb' }}>
+                                    <td className="p-3 font-bold" style={{ color: THEME.colors.textPrimary }}>JAKI JESTEM</td>
+                                    <td className="p-3 text-center text-2xl font-bold" style={{ color: THEME.colors.textPrimary }}>{analysis.evenOddAnalysis.am.odd}</td>
+                                    <td className="p-3 text-center text-2xl font-bold" style={{ color: THEME.colors.textPrimary }}>{analysis.evenOddAnalysis.am.even}</td>
                                 </tr>
                                 <tr>
-                                    <td className="p-3 font-bold text-gray-800">JAKI CHCIAŁBYM BYĆ</td>
-                                    <td className="p-3 text-center text-2xl font-bold text-gray-800">{analysis.evenOddAnalysis.wannabe.odd}</td>
-                                    <td className="p-3 text-center text-2xl font-bold text-gray-800">{analysis.evenOddAnalysis.wannabe.even}</td>
+                                    <td className="p-3 font-bold" style={{ color: THEME.colors.textPrimary }}>JAKI CHCIAŁBYM BYĆ</td>
+                                    <td className="p-3 text-center text-2xl font-bold" style={{ color: THEME.colors.textPrimary }}>{analysis.evenOddAnalysis.wannabe.odd}</td>
+                                    <td className="p-3 text-center text-2xl font-bold" style={{ color: THEME.colors.textPrimary }}>{analysis.evenOddAnalysis.wannabe.even}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -397,7 +403,10 @@ const ResultsScreen = ({ resultsAm, resultsWannabe, onRestart }) => {
                 <button
                     onClick={handleGeneratePdf}
                     disabled={isGeneratingPdf}
-                    className="px-8 py-3 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="px-8 py-3 text-white font-bold rounded-lg shadow-md transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: '#16a34a' }}
+                    onMouseOver={e => e.currentTarget.style.backgroundColor = '#15803d'}
+                    onMouseOut={e => e.currentTarget.style.backgroundColor = '#16a34a'}
                 >
                     {isGeneratingPdf ? 'Generowanie PDF...' : 'Pobierz raport PDF'}
                 </button>
@@ -415,13 +424,16 @@ const ResultsScreen = ({ resultsAm, resultsWannabe, onRestart }) => {
 // Komponent ekranu powitalnego
 const WelcomeScreen = ({ onStart }) => (
     <div className="flex flex-col items-center justify-center min-h-screen text-center p-8">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-4">Ścieżka do Samopoznania Q-Sort</h1>
-        <p className="text-lg text-gray-600 max-w-2xl mb-8">
+        <h1 className="text-4xl md:text-5xl font-extrabold my-8" style={{ color: THEME.colors.textPrimary }}>Ścieżka do Samopoznania Q-Sort</h1>
+        <p className="text-lg max-w-2xl mb-8" style={{ color: THEME.colors.textSecondary }}>
             To interaktywne ćwiczenie pomoże Ci zrozumieć, kim jesteś i kim pragniesz się stać. Posortuj stwierdzenia w dwóch etapach, aby odkryć kluczowe informacje o swojej osobistej podróży.
         </p>
         <button
             onClick={onStart}
-            className="px-10 py-4 bg-blue-600 text-white font-bold text-lg rounded-lg shadow-xl hover:bg-blue-700 transform hover:scale-105 transition-all"
+            className="px-10 py-4 text-white font-bold text-lg rounded-lg shadow-xl transform hover:scale-105 transition-all"
+            style={{ backgroundColor: THEME.colors.primary }}
+            onMouseOver={e => e.currentTarget.style.backgroundColor = THEME.colors.primaryHover}
+            onMouseOut={e => e.currentTarget.style.backgroundColor = THEME.colors.primary}
         >
             Rozpocznij Test
         </button>
@@ -436,6 +448,7 @@ export default function App() {
     const [resultsWannabe, setResultsWannabe] = useState(null);
 
     useEffect(() => {
+        document.body.style.backgroundColor = THEME.colors.background;
         const loadScript = (src, id) => {
             if (document.getElementById(id)) return;
             const script = document.createElement('script');
@@ -484,7 +497,7 @@ export default function App() {
     };
 
     return (
-        <div className="bg-gray-100 min-h-screen font-sans">
+        <div className="font-sans" style={{ backgroundColor: THEME.colors.background }}>
             <main className="container mx-auto">
                 {renderPhase()}
             </main>
